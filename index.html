@@ -58,13 +58,13 @@ nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(-
 .duel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .duel-num{font-weight:600}
 .skip{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
-.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
-.vs{font-size:clamp(1.4rem,5vw,2.4rem);font-weight:800;color:var(--gold);font-style:italic;letter-spacing:-.02em}
-.side{position:relative}
-.pick{width:100%;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:10px}
+.vs{align-self:center;font-size:clamp(1.4rem,5vw,2.4rem);font-weight:800;color:var(--gold);font-style:italic;letter-spacing:-.02em}
+.side{position:relative;display:flex}
+.pick{width:100%;display:flex;flex-direction:column;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;
   text-align:left;box-shadow:var(--shadow);transition:border-color .15s,opacity .15s,transform .15s}
-.pick .frame{aspect-ratio:4/3;background:var(--bg);border-radius:6px;overflow:hidden;display:grid;place-items:center}
-.pick img{width:100%;height:100%;object-fit:contain}
+.pick .frame{flex:1;min-height:120px;background:var(--bg);border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pick img{width:auto;height:auto;max-width:100%;max-height:min(72vh,760px)}
 .pick .name{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;font-weight:600;font-size:.95rem}
 .pick .tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:.8rem}
 .pick[aria-pressed="true"]{border-color:var(--gold)}
