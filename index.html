@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Poster Cup — prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eceef4; --surface:#ffffff; --ink:#2a1d3a; --muted:#6b6380;
+  --line:#d4d2de; --gold:#a8740a; --gold-soft:#f6e7c4; --teal:#1f7a6e;
+  --shadow:0 1px 0 rgba(42,29,58,.08);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1f1630; --surface:#2b2040; --ink:#f3ecdf; --muted:#b4a9c8;
+    --line:#43365c; --gold:#e8b93f; --gold-soft:#4a3a1c; --teal:#7ec4b8;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1f1630; --surface:#2b2040; --ink:#f3ecdf; --muted:#b4a9c8;
+  --line:#43365c; --gold:#e8b93f; --gold-soft:#4a3a1c; --teal:#7ec4b8;
+  --shadow:none;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.5;}
+img{max-width:100%;display:block}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+header.top{padding:32px 0 8px}
+.title{font-size:clamp(2.6rem,9vw,4.8rem);font-weight:800;line-height:.9;letter-spacing:-.03em;margin:0}
+.round-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:14px 0 4px}
+.round-name{font-size:1.5rem;font-weight:600}
+.round-meta{color:var(--muted)}
+.intro{color:var(--muted);max-width:60ch;margin:6px 0 0}
+
+nav.tabs{display:flex;gap:4px;margin:24px 0 20px;border-bottom:2px solid var(--line)}
+nav.tabs button{background:none;border:0;padding:10px 14px;font-weight:600;color:var(--muted);
+  border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
+
+.honour{background:var(--gold-soft);border-left:4px solid var(--gold);padding:10px 14px;margin:0 0 24px;border-radius:0 6px 6px 0}
+
+/* duels */
+.duels{display:grid;gap:28px;padding-bottom:140px}
+.duel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.duel-num{font-weight:600}
+.skip{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.vs{font-size:clamp(1.4rem,5vw,2.4rem);font-weight:800;color:var(--gold);font-style:italic;letter-spacing:-.02em}
+.side{position:relative}
+.pick{width:100%;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;
+  text-align:left;box-shadow:var(--shadow);transition:border-color .15s,opacity .15s,transform .15s}
+.pick .frame{aspect-ratio:4/3;background:var(--bg);border-radius:6px;overflow:hidden;display:grid;place-items:center}
+.pick img{width:100%;height:100%;object-fit:contain}
+.pick .name{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:8px;font-weight:600;font-size:.95rem}
+.pick .tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:.8rem}
+.pick[aria-pressed="true"]{border-color:var(--gold)}
+.pick[aria-pressed="true"] .tick{background:var(--gold);border-color:var(--gold);color:var(--surface)}
+.pair.decided .pick[aria-pressed="false"]{opacity:.45}
+.zoom{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:0;
+  background:rgba(20,14,30,.72);color:#fff;cursor:pointer;display:grid;place-items:center;font-size:1rem}
+
+/* submit bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:2px solid var(--line);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));z-index:5}
+.bar-inner{max-width:980px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.bar input{flex:1 1 180px;min-width:0;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--bg)}
+.bar .count{color:var(--muted);white-space:nowrap}
+.btn{background:var(--gold);color:#1f1630;border:0;border-radius:8px;padding:11px 18px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:none;border:2px solid var(--line);color:var(--ink)}
+.msg{flex-basis:100%;margin:0;font-size:.92rem}
+.msg.err{color:#c0392b}
+:root[data-theme="dark"] .msg.err{color:#ff8a7a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msg.err{color:#ff8a7a}}
+
+.done{background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:24px;margin-bottom:140px}
+.done h2{margin:0 0 6px}
+
+/* bracket */
+.bracket-scroll{overflow-x:auto;padding-bottom:12px}
+.bracket{display:grid;grid-template-columns:repeat(5,minmax(200px,1fr));gap:18px;min-width:1060px}
+.col h3{margin:0 0 10px;font-size:1.05rem}
+.col .sub{color:var(--muted);font-size:.85rem;margin:-8px 0 10px}
+.match{background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;overflow:hidden;font-size:.9rem}
+.row{display:flex;justify-content:space-between;gap:8px;padding:5px 10px}
+.row+.row{border-top:1px solid var(--line)}
+.row>span:first-child{min-width:0;overflow-wrap:anywhere}
+.row.win{font-weight:700}
+.row.lose{color:var(--muted)}
+.row .pct{font-variant-numeric:tabular-nums}
+.ll{display:inline-block;font-size:.7rem;font-weight:700;background:var(--teal);color:var(--surface);border-radius:4px;padding:0 5px;margin-left:5px;vertical-align:1px}
+.tbd{color:var(--muted)}
+.champ{border:2px solid var(--gold);border-radius:10px;padding:16px;margin-top:4px}
+.champ img{border-radius:6px;margin-bottom:8px}
+
+.demo{margin:28px 0 60px;padding:16px;border:2px dashed var(--line);border-radius:10px}
+.demo h3{margin:0 0 4px}
+.demo p{color:var(--muted);margin:0 0 12px;max-width:65ch}
+.demo .btns{display:flex;flex-wrap:wrap;gap:10px}
+.ll-note{color:var(--muted);font-size:.85rem;margin-top:10px}
+
+/* lightbox */
+dialog{border:0;padding:0;background:transparent;max-width:min(94vw,1100px);max-height:92vh}
+dialog::backdrop{background:rgba(15,10,24,.85)}
+dialog img{max-height:84vh;width:auto;margin:0 auto;border-radius:8px}
+dialog .cap{color:#fff;text-align:center;margin-top:8px;font-weight:600}
+dialog button{position:absolute;top:8px;right:8px}
+
+@media (max-width:640px){
+  .pair{grid-template-columns:1fr;gap:4px}
+  .vs{text-align:center;line-height:1.2}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="title">Poster Cup</h1>
+    <div class="round-line">
+      <span class="round-name" id="roundName"></span>
+      <span class="round-meta" id="roundMeta"></span>
+    </div>
+    <p class="intro">Pick the better poster in each duel. One ballot per player per round. Tap the magnifier to see a poster full size.</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="vote">Vote</button>
+    <button role="tab" aria-selected="false" data-tab="bracket">Bracket</button>
+  </nav>
+
+  <section id="voteView"></section>
+  <section id="bracketView" hidden></section>
+</div>
+
+<div class="bar" id="bar">
+  <div class="bar-inner">
+    <input id="nick" type="text" placeholder="Your Lichess nickname" autocomplete="off" aria-label="Your nickname">
+    <span class="count" id="count"></span>
+    <button class="btn" id="submit">Submit votes</button>
+    <p class="msg" id="msg" aria-live="polite"></p>
+  </div>
+</div>
+
+<dialog id="lb">
+  <button class="btn ghost" id="lbClose" style="background:rgba(0,0,0,.5);color:#fff;border-color:transparent">Close</button>
+  <img id="lbImg" alt="">
+  <div class="cap" id="lbCap"></div>
+</dialog>
+
+<script>
+/* ===================== SETUP =====================
+   Paste your Apps Script web app URL between the quotes (step 5 of the setup). */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrek-Mn0POOmo74mZ6PGpln5yfTASoec3rYTezX2VsRGwFtrrVA10ohq3BC3l4XgRkVw/exec";
+/* ================================================= */
+
+const TEAM_DATA = [
+ {
+  "name": "50 first mates",
+  "img": "posters/50-first-mates.jpg"
+ },
+ {
+  "name": "50 pawns of Giri",
+  "img": "posters/50-pawns-of-giri.jpg"
+ },
+ {
+  "name": "Don't give a check your ascii can't cache",
+  "img": "posters/don-t-give-a-check-your-ascii-can-t-cach.jpg"
+ },
+ {
+  "name": "If anyone can refute it—don't show me",
+  "img": "posters/if-anyone-can-refute-it-don-t-show-me.jpg"
+ },
+ {
+  "name": "Illiterate Alliteration Explorers",
+  "img": "posters/illiterate-alliteration-explorers.jpg"
+ },
+ {
+  "name": "King's Landing",
+  "img": "posters/king-s-landing.jpg"
+ },
+ {
+  "name": "Knights of the Round Tablebase",
+  "img": "posters/knights-of-the-round-tablebase.jpg"
+ },
+ {
+  "name": "Lang and Lloyd R0Bbed Sed in the windy Canadian Alps with a fork",
+  "img": "posters/lang-and-lloyd-r0bbed-sed-in-the-windy-c.jpg"
+ },
+ {
+  "name": "Mating for Godot",
+  "img": "posters/mating-for-godot.jpg"
+ },
+ {
+  "name": "Morphy's Mates",
+  "img": "posters/morphy-s-mates.jpg"
+ },
+ {
+  "name": "my english needs work",
+  "img": "posters/my-english-needs-work.jpg"
+ },
+ {
+  "name": "Old but hoping for stratospheric improvement",
+  "img": "posters/old-but-hoping-for-stratospheric-improve.jpg"
+ },
+ {
+  "name": "passed pawn patrol",
+  "img": "posters/passed-pawn-patrol.jpg"
+ },
+ {
+  "name": "Peaky Decliners: An Authoritative Commentary by Svidler, King et al. (50th edition)",
+  "img": "posters/peaky-decliners-an-authoritative-comment.jpg"
+ },
+ {
+  "name": "pspspspspsps",
+  "img": "posters/pspspspspsps.jpg"
+ },
+ {
+  "name": "Riding with the King",
+  "img": "posters/riding-with-the-king.jpg"
+ },
+ {
+  "name": "Rooky Horror Pawn Show",
+  "img": "posters/rooky-horror-pawn-show.jpg"
+ },
+ {
+  "name": "Svidl, Svidler, Svidlest",
+  "img": "posters/svidl-svidler-svidlest.jpg"
+ },
+ {
+  "name": "Svidler? I hardly know her",
+  "img": "posters/svidler-i-hardly-know-her.jpg"
+ },
+ {
+  "name": "The Greek Gifty Nifty Fifty",
+  "img": "posters/the-greek-gifty-nifty-fifty.jpg"
+ },
+ {
+  "name": "The kannjuring",
+  "img": "posters/the-kannjuring.jpg"
+ },
+ {
+  "name": "The Last Shall be the First",
+  "img": "posters/the-last-shall-be-the-first.gif"
+ },
+ {
+  "name": "The Woodpushers",
+  "img": "posters/the-woodpushers.jpg"
+ },
+ {
+  "name": "Total Tomination",
+  "img": "posters/total-tomination.jpg"
+ },
+ {
+  "name": "We're not going to TAKE TAKE TAKE it",
+  "img": "posters/we-re-not-going-to-take-take-take-it.jpg"
+ },
+ {
+  "name": "What a team! And we managed to avoid Prosti",
+  "img": "posters/what-a-team-and-we-managed-to-avoid-pros.gif"
+ }
+];
+const TEAMS = TEAM_DATA.map((t, i) => ({ id: i, ...t }));
+const ROUND_NAMES = ["Round 1", "Round of 16", "Quarter-finals", "Semi-finals", "Final"];
+const ROUND_SIZES = [13, 8, 4, 2, 1];
+const NICK_KEY = "posterCup.nick";
+
+let state = null, picks = {}, sending = false;
+const team = id => TEAMS[id];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = id => document.getElementById(id);
+
+try { $("nick").value = localStorage.getItem(NICK_KEY) || ""; } catch(e){}
+
+async function load(){
+  if (!SCRIPT_URL.startsWith("https://")){
+    $("voteView").innerHTML = `<div class="done"><h2>Setup not finished</h2><p>SCRIPT_URL is missing in index.html.</p></div>`;
+    $("bar").hidden = true; return;
+  }
+  try {
+    const r = await fetch(SCRIPT_URL, { cache: "no-store" });
+    state = await r.json();
+  } catch(e){
+    $("voteView").innerHTML = `<div class="done"><h2>Couldn't load the duels</h2><p>The vote server didn't respond. Reload the page to try again.</p></div>`;
+    $("bar").hidden = true; return;
+  }
+  render();
+}
+
+/* ---------- vote view ---------- */
+function renderVote(){
+  const el = $("voteView"), bar = $("bar");
+  if (state.round < 0){
+    bar.hidden = true;
+    el.innerHTML = `<div class="done"><h2>Voting opens soon</h2><p>Round 1 hasn't been drawn yet. Check back later.</p></div>`;
+    return;
+  }
+  if (state.round > 4){
+    bar.hidden = true;
+    const c = team(state.champion);
+    el.innerHTML = `<div class="done"><h2>${esc(c.name)} wins the Poster Cup</h2>
+      <p>Voting is over. See the Bracket tab for every result.</p>
+      <img src="${c.img}" alt="${esc(c.name)} poster" style="max-width:420px;width:100%;border-radius:8px;margin-top:12px"></div>`;
+    return;
+  }
+  bar.hidden = document.querySelector('nav.tabs button[data-tab="bracket"]').getAttribute("aria-selected") === "true";
+  const duels = state.rounds[state.round];
+  let html = `<div class="duels">`;
+  duels.forEach((d, i) => {
+    const decided = picks[i] !== undefined;
+    html += `<article class="duel"><div class="duel-head"><span class="duel-num">Duel ${i+1}</span>
+      ${decided ? `<button class="skip" data-skip="${i}">Clear pick</button>` : ""}</div>
+      <div class="pair ${decided ? "decided" : ""}">
+        ${side(d.a, i)}<span class="vs" aria-hidden="true">vs</span>${side(d.b, i)}
+      </div></article>`;
+  });
+  el.innerHTML = html + `</div>`;
+  updateCount();
+}
+function side(id, i){
+  const t = team(id), on = picks[i] === id;
+  const ll = state.round === 1 && state.lucky.includes(id) ? `<span class="ll" title="Lucky loser">LL</span>` : "";
+  return `<div class="side">
+    <button class="pick" data-duel="${i}" data-id="${id}" aria-pressed="${on}">
+      <div class="frame"><img src="${t.img}" alt="${esc(t.name)} poster" loading="lazy"></div>
+      <span class="name"><span>${esc(t.name)}${ll}</span><span class="tick" aria-hidden="true">${on ? "✓" : ""}</span></span>
+    </button>
+    <button class="zoom" data-zoom="${id}" aria-label="View ${esc(t.name)} poster full size">⤢</button>
+  </div>`;
+}
+function updateCount(){
+  const n = Object.keys(picks).length, total = state.rounds[state.round].length;
+  $("count").textContent = `${n} of ${total} picked`;
+  $("submit").disabled = n === 0 || sending;
+}
+
+$("voteView").addEventListener("click", e => {
+  const z = e.target.closest("[data-zoom]");
+  if (z){ openLb(+z.dataset.zoom); return; }
+  const s = e.target.closest("[data-skip]");
+  if (s){ delete picks[+s.dataset.skip]; renderVote(); return; }
+  const p = e.target.closest(".pick");
+  if (p){
+    const i = +p.dataset.duel, id = +p.dataset.id;
+    if (picks[i] === id) delete picks[i]; else picks[i] = id;
+    renderVote();
+  }
+});
+
+$("submit").addEventListener("click", async () => {
+  const msg = $("msg"), nick = $("nick").value.trim();
+  msg.className = "msg";
+  if (!nick){ msg.className = "msg err"; msg.textContent = "Enter your nickname to submit."; return; }
+  sending = true; updateCount(); $("submit").textContent = "Sending…";
+  try {
+    const r = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ nick, round: state.round, picks }) });
+    const res = await r.json();
+    if (res.ok){
+      try { localStorage.setItem(NICK_KEY, res.nick); } catch(e){}
+      picks = {};
+      msg.textContent = `Votes saved for ${res.nick} (${res.count} duel${res.count === 1 ? "" : "s"}). Thanks!`;
+      await load();
+    } else {
+      msg.className = "msg err"; msg.textContent = res.error;
+    }
+  } catch(e){
+    msg.className = "msg err"; msg.textContent = "Couldn't reach the vote server. Check your connection and try again.";
+  }
+  sending = false; $("submit").textContent = "Submit votes"; if (state) updateCount();
+});
+
+/* ---------- bracket view ---------- */
+function renderBracket(){
+  let html = `<div class="bracket-scroll"><div class="bracket">`;
+  for (let r = 0; r < 5; r++){
+    const duels = state.rounds[r];
+    const sub = r === state.round ? "Voting now" : r < state.round ? "Closed" : r === 0 ? "13 winners + 3 lucky losers go through" : "Not started";
+    html += `<div class="col"><h3>${ROUND_NAMES[r]}</h3><p class="sub">${sub}</p>`;
+    if (duels){
+      duels.forEach(d => html += matchHtml(d, r));
+      if (r === 0 && state.luckyInfo.length)
+        html += `<p class="ll-note">Lucky losers: ${state.luckyInfo.map(l => `${esc(team(l.id).name)} (${Math.round(l.share*100)}%)`).join(", ")}</p>`;
+    } else {
+      for (let k = 0; k < ROUND_SIZES[r]; k++) html += `<div class="match"><div class="row tbd">To be decided</div><div class="row tbd">To be decided</div></div>`;
+    }
+    if (r === 4 && state.champion !== null){
+      const c = team(state.champion);
+      html += `<div class="champ"><img src="${c.img}" alt="${esc(c.name)} poster"><strong>${esc(c.name)}</strong> wins</div>`;
+    }
+    html += `</div>`;
+  }
+  $("bracketView").innerHTML = html + `</div></div>`;
+}
+function matchHtml(d, r){
+  const total = d.va + d.vb, closed = d.w !== null, showLive = r === state.round && state.liveCounts;
+  const row = id => {
+    const v = id === d.a ? d.va : d.vb;
+    const cls = closed ? (d.w === id ? "win" : "lose") : "";
+    const ll = r === 1 && state.lucky.includes(id) ? `<span class="ll" title="Lucky loser">LL</span>` : "";
+    const pct = closed ? (total ? `${Math.round(v/total*100)}%` : "") : showLive ? `${v}` : "";
+    return `<div class="row ${cls}"><span>${esc(team(id).name)}${ll}</span><span class="pct">${pct}</span></div>`;
+  };
+  return `<div class="match">${row(d.a)}${row(d.b)}</div>`;
+}
+
+/* ---------- lightbox, tabs, header ---------- */
+const lb = $("lb");
+function openLb(id){ const t = team(id); $("lbImg").src = t.img; $("lbImg").alt = t.name + " poster"; $("lbCap").textContent = t.name; lb.showModal(); }
+$("lbClose").onclick = () => lb.close();
+lb.addEventListener("click", e => { if (e.target === lb) lb.close(); });
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+  const vote = b.dataset.tab === "vote";
+  $("voteView").hidden = !vote;
+  $("bracketView").hidden = vote;
+  $("bar").hidden = !vote || !state || state.round < 0 || state.round > 4;
+});
+
+function render(){
+  const r = state.round;
+  $("roundName").textContent = r < 0 ? "Coming soon" : r > 4 ? "Tournament finished" : ROUND_NAMES[r];
+  $("roundMeta").textContent = r < 0 || r > 4 ? "" : `Week ${r + 1} of 5, ${state.rounds[r].length} duel${state.rounds[r].length > 1 ? "s" : ""}`;
+  renderVote(); renderBracket();
+}
+
+$("voteView").innerHTML = `<p class="intro">Loading duels…</p>`;
+load();
+</script>
+</body>
+</html>
